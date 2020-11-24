@@ -92,6 +92,7 @@ namespace RepositoryInitializer.App.WPF
 
             Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
             Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
+            Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
             MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
         }

@@ -9,19 +9,25 @@ namespace RepositoryInitializer.App.WPF
     {
         internal static string ReplaceWithVariables(this string text, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            foreach (var pair in variables)
+            foreach (var (key, value) in variables)
             {
-                text = text.Replace(pair.Key, pair.Value, comparison);
+                text = text.Replace(key, value, comparison);
             }
 
             return text;
         }
 
+        internal static ICollection<string> IgnoredSubfolders { get; } = new List<string>
+        {
+            ".git",
+            ".vs",
+        };
+
         internal static IEnumerable<string> GetPaths(string folder)
         {
             return Directory
                 .EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
-                .Where(path => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\.git"));
+                .Where(path => IgnoredSubfolders.All(subFolder => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\" + subFolder)));
         }
 
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
@@ -44,6 +50,23 @@ namespace RepositoryInitializer.App.WPF
                 var contents = File.ReadAllText(path);
 
                 File.WriteAllText(path, contents.ReplaceWithVariables(variables, comparison));
+            }
+        }
+
+        public static void DeleteEmptyDirs(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            foreach (var path in Directory
+                .EnumerateDirectories(folder, "*", SearchOption.AllDirectories)
+                .Where(path => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\.git")))
+            {
+                foreach (var (key, _) in variables)
+                {
+                    if (path.Contains(key, comparison))
+                    {
+                        Directory.Delete(path);
+                        break;
+                    }
+                }
             }
         }
     }
