@@ -1,10 +1,84 @@
-﻿namespace RepositoryInitializer.App.WPF
+﻿using System;
+using System.Collections.Specialized;
+using System.Linq;
+using RepositoryInitializer.App.WPF.Properties;
+
+namespace RepositoryInitializer.App.WPF
 {
     public partial class MainWindow
     {
+        #region Properties
+
+        public MainViewModel ViewModel { get; }
+
+        #endregion
+
+        #region Constructors
+
         public MainWindow()
         {
             InitializeComponent();
+
+            ViewModel = Load();
+            DataContext = ViewModel;
         }
+
+        #endregion
+
+        #region Methods
+
+        private static void Save(MainViewModel viewModel)
+        {
+            var settings = Settings.Default;
+            settings.Path = viewModel.Path;
+            settings.VariableNames = new StringCollection();
+            settings.VariableNames.AddRange(viewModel.Variables.Select(i => i.Key ?? string.Empty).ToArray());
+            settings.VariableValues = new StringCollection();
+            settings.VariableValues.AddRange(viewModel.Variables.Select(i => i.Value ?? string.Empty).ToArray());
+
+            settings.Save();
+        }
+
+        private static MainViewModel Load()
+        {
+            var settings = Settings.Default;
+            var viewModel = new MainViewModel
+            {
+                Path = settings.Path
+            };
+
+            var names = settings.VariableNames?.Cast<string>().ToArray() ?? Array.Empty<string>();
+            var values = settings.VariableValues?.Cast<string>().ToArray() ?? Array.Empty<string>();
+            foreach (var (name, value) in names.Zip(values))
+            {
+                viewModel.Variables.Add(new Variable
+                {
+                    Key = name,
+                    Value = value,
+                });
+            }
+
+            return viewModel;
+        }
+
+        #endregion
+
+        #region Event Handlers
+
+        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
+        {
+            Save(ViewModel);
+
+            var path = ViewModel.Path;
+            var variables = ViewModel.Variables
+                .ToDictionary(
+                    pair => pair.Key ?? string.Empty,
+                    pair => pair.Value ?? string.Empty);
+
+            Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
+            Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
+        }
+
+        #endregion
     }
 }
