@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 
 namespace RepositoryInitializer.App.WPF
 {
     public static class Replacer
     {
-        public static string ReplaceWithVariables(this string text, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
+        internal static string ReplaceWithVariables(this string text, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
             foreach (var pair in variables)
             {
@@ -16,19 +17,29 @@ namespace RepositoryInitializer.App.WPF
             return text;
         }
 
+        internal static IEnumerable<string> GetPaths(string folder)
+        {
+            return Directory
+                .EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
+                .Where(path => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\.git"));
+        }
+
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            var paths = Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories);
-            foreach (var path in paths)
+            foreach (var path in GetPaths(folder))
             {
-                File.Move(path, path.ReplaceWithVariables(variables, comparison));
+                var to = path.ReplaceWithVariables(variables, comparison);
+
+                var directory = Path.GetDirectoryName(to);
+                Directory.CreateDirectory(directory ?? string.Empty);
+
+                File.Move(path, to);
             }
         }
 
         public static void ReplaceContents(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            var paths = Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories);
-            foreach (var path in paths)
+            foreach (var path in GetPaths(folder))
             {
                 var contents = File.ReadAllText(path);
 

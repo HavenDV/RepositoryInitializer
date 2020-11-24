@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Windows;
 using RepositoryInitializer.App.WPF.Properties;
 
 namespace RepositoryInitializer.App.WPF
@@ -58,6 +59,20 @@ namespace RepositoryInitializer.App.WPF
                 });
             }
 
+            if (!viewModel.Variables.Any())
+            {
+                viewModel.Variables.Add(new()
+                {
+                    Key = "$PROJECT_NAME$",
+                    Value = "Name",
+                });
+                viewModel.Variables.Add(new()
+                {
+                    Key = "$PROJECT_DESCRIPTION$",
+                    Value = "Description",
+                });
+            }
+
             return viewModel;
         }
 
@@ -65,7 +80,7 @@ namespace RepositoryInitializer.App.WPF
 
         #region Event Handlers
 
-        private void Button_Click(object sender, System.Windows.RoutedEventArgs e)
+        private void Button_Click(object sender, RoutedEventArgs e)
         {
             Save(ViewModel);
 
@@ -77,6 +92,8 @@ namespace RepositoryInitializer.App.WPF
 
             Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
             Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
+
+            MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
         }
 
         #endregion
