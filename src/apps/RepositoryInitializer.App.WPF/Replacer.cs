@@ -17,6 +17,11 @@ namespace RepositoryInitializer.App.WPF
             return text;
         }
 
+        internal static bool ContainsVariables(this string text, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            return variables.Keys.Any(key => text.Contains(key, comparison));
+        }
+
         internal static ICollection<string> IgnoredSubfolders { get; } = new List<string>
         {
             ".git",
@@ -37,7 +42,8 @@ namespace RepositoryInitializer.App.WPF
 
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            foreach (var path in GetPaths(folder))
+            foreach (var path in GetPaths(folder)
+                .Where(path => path.ContainsVariables(variables)))
             {
                 var to = path.ReplaceWithVariables(variables, comparison);
 
@@ -53,6 +59,10 @@ namespace RepositoryInitializer.App.WPF
             foreach (var path in GetPaths(folder))
             {
                 var contents = File.ReadAllText(path);
+                if (!contents.ContainsVariables(variables))
+                {
+                    continue;
+                }
 
                 File.WriteAllText(path, contents.ReplaceWithVariables(variables, comparison));
             }
@@ -62,16 +72,9 @@ namespace RepositoryInitializer.App.WPF
         {
             foreach (var path in Directory
                 .EnumerateDirectories(folder, "*", SearchOption.AllDirectories)
-                .Where(path => !IsIgnored(path, folder)))
+                .Where(path => !IsIgnored(path, folder) && path.ContainsVariables(variables, comparison)))
             {
-                foreach (var (key, _) in variables)
-                {
-                    if (path.Contains(key, comparison))
-                    {
-                        Directory.Delete(path, true);
-                        break;
-                    }
-                }
+                Directory.Delete(path, true);
             }
         }
     }
