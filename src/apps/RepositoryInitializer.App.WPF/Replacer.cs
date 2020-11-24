@@ -23,11 +23,16 @@ namespace RepositoryInitializer.App.WPF
             ".vs",
         };
 
+        internal static bool IsIgnored(string path, string folder)
+        {
+            return IgnoredSubfolders.Any(subFolder => path.StartsWith(folder.TrimEnd('\\', '/') + "\\" + subFolder));
+        }
+
         internal static IEnumerable<string> GetPaths(string folder)
         {
             return Directory
                 .EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
-                .Where(path => IgnoredSubfolders.All(subFolder => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\" + subFolder)));
+                .Where(path => !IsIgnored(path, folder));
         }
 
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
@@ -57,13 +62,13 @@ namespace RepositoryInitializer.App.WPF
         {
             foreach (var path in Directory
                 .EnumerateDirectories(folder, "*", SearchOption.AllDirectories)
-                .Where(path => !path.StartsWith(folder.TrimEnd('\\', '/') + "\\.git")))
+                .Where(path => !IsIgnored(path, folder)))
             {
                 foreach (var (key, _) in variables)
                 {
                     if (path.Contains(key, comparison))
                     {
-                        Directory.Delete(path);
+                        Directory.Delete(path, true);
                         break;
                     }
                 }

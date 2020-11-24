@@ -10,7 +10,7 @@ namespace RepositoryInitializer.App.WPF
     {
         #region Properties
 
-        public MainViewModel ViewModel { get; }
+        public MainViewModel ViewModel { get; } = new();
 
         #endregion
 
@@ -20,8 +20,15 @@ namespace RepositoryInitializer.App.WPF
         {
             InitializeComponent();
 
-            ViewModel = Load();
-            DataContext = ViewModel;
+            try
+            {
+                ViewModel = Load();
+                DataContext = ViewModel;
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         #endregion
@@ -82,19 +89,26 @@ namespace RepositoryInitializer.App.WPF
 
         private void Button_Click(object sender, RoutedEventArgs e)
         {
-            Save(ViewModel);
+            try
+            {
+                Save(ViewModel);
 
-            var path = ViewModel.Path;
-            var variables = ViewModel.Variables
-                .ToDictionary(
-                    pair => pair.Key ?? string.Empty,
-                    pair => pair.Value ?? string.Empty);
+                var path = ViewModel.Path;
+                var variables = ViewModel.Variables
+                    .ToDictionary(
+                        pair => pair.Key ?? string.Empty,
+                        pair => pair.Value ?? string.Empty);
 
-            Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
-            Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
-            Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
+                Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
+                Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
+                Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
-            MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
+                MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         #endregion
