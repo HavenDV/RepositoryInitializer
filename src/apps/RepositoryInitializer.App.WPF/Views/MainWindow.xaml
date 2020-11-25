@@ -3,24 +3,25 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:RepositoryInitializer.App.WPF"
         xmlns:viewModels="clr-namespace:RepositoryInitializer.App.WPF.ViewModels"
         x:Class="RepositoryInitializer.App.WPF.Views.MainWindow"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800" Loaded="Window_Loaded">
+        Title="MainWindow" Height="800" Width="800" Loaded="Window_Loaded">
     <Window.DataContext>
         <viewModels:MainViewModel />
     </Window.DataContext>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="50*" />
-            <RowDefinition Height="50*" />
+            <RowDefinition Height="20*" />
+            <RowDefinition Height="40*" />
+            <RowDefinition Height="40*" />
             <RowDefinition Height="35" />
             <RowDefinition Height="35" />
         </Grid.RowDefinitions>
-        <DataGrid Grid.Row="0" ItemsSource="{Binding Variables}" />
-        <DataGrid Grid.Row="1" ItemsSource="{Binding Conditions}" />
-        <Grid Grid.Row="2" >
+        <DataGrid Grid.Row="0" ItemsSource="{Binding Constants}" />
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Variables}" />
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Conditions}" />
+        <Grid Grid.Row="3" >
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="100" />
                 <ColumnDefinition Width="*" />
@@ -28,7 +29,7 @@
             <Label Grid.Column="0" Content="Path:" VerticalAlignment="Center" />
             <TextBox Grid.Column="1" Text="{Binding Path}" Margin="5" />
         </Grid>
-        <StackPanel Grid.Row="3" Orientation="Horizontal">
+        <StackPanel Grid.Row="4" Orientation="Horizontal">
             <Button Content="Open" Click="OpenButton_Click" Padding="10,0" />
             <Button Content="Save" Click="SaveButton_Click" Padding="10,0" />
             <Button Content="Replace" Click="ReplaceButton_Click" Padding="10,0" />

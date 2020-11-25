@@ -90,14 +90,15 @@ namespace RepositoryInitializer.App.WPF.Views
                 Conditions = new ObservableCollection<Condition>(settings.Conditions)
             };
 
+            var name = Path.GetFileName(repositoryPath.TrimEnd('\\', '/'));
             if (!viewModel.Variables.Any() && !viewModel.Conditions.Any())
             {
-                var name = Path.GetFileName(repositoryPath.TrimEnd('\\', '/'));
-                viewModel.Variables.Add(new("$PROJECT_NAME$", name));
                 viewModel.Variables.Add(new("$PROJECT_DESCRIPTION$", name));
 
                 viewModel.Conditions.Add(new("?CONDITION?", true));
             }
+
+            viewModel.Constants.Add(new("$PROJECT_NAME$", name));
 
             return viewModel;
         }
@@ -164,6 +165,15 @@ namespace RepositoryInitializer.App.WPF.Views
                     .ToDictionary(
                         pair => pair.Key ?? string.Empty,
                         pair => pair.Value ?? string.Empty);
+                var constants = ViewModel.Constants
+                    .ToDictionary(
+                        pair => pair.Key ?? string.Empty,
+                        pair => pair.Value ?? string.Empty);
+                foreach (var (key, value) in constants
+                    .Where(pair => !variables.ContainsKey(pair.Key)))
+                {
+                    variables[key] = value;
+                }
 
                 Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
                 Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
