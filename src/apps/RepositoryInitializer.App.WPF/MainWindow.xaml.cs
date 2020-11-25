@@ -1,8 +1,11 @@
 ﻿using System;
-using System.Collections.Specialized;
+using System.Collections.ObjectModel;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Windows;
-using RepositoryInitializer.App.WPF.Properties;
+using System.Windows.Forms;
+using MessageBox = System.Windows.MessageBox;
 
 namespace RepositoryInitializer.App.WPF
 {
@@ -10,7 +13,7 @@ namespace RepositoryInitializer.App.WPF
     {
         #region Properties
 
-        public MainViewModel ViewModel { get; } = new();
+        public MainViewModel ViewModel { get; set; } = new();
 
         #endregion
 
@@ -19,16 +22,6 @@ namespace RepositoryInitializer.App.WPF
         public MainWindow()
         {
             InitializeComponent();
-
-            try
-            {
-                ViewModel = Load();
-                DataContext = ViewModel;
-            }
-            catch (Exception exception)
-            {
-                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
-            }
         }
 
         #endregion
@@ -37,62 +30,131 @@ namespace RepositoryInitializer.App.WPF
 
         private static void Save(MainViewModel viewModel)
         {
-            var settings = Settings.Default;
+            var settings = Properties.Settings.Default;
             settings.Path = viewModel.Path;
-            settings.VariableNames = new StringCollection();
-            settings.VariableNames.AddRange(viewModel.Variables.Select(i => i.Key ?? string.Empty).ToArray());
-            settings.VariableValues = new StringCollection();
-            settings.VariableValues.AddRange(viewModel.Variables.Select(i => i.Value ?? string.Empty).ToArray());
 
             settings.Save();
         }
 
         private static MainViewModel Load()
         {
-            var settings = Settings.Default;
+            var settings = Properties.Settings.Default;
+            if (settings.UpgradeRequired)
+            {
+                settings.Upgrade();
+                settings.UpgradeRequired = false;
+                settings.Save();
+            }
+
             var viewModel = new MainViewModel
             {
                 Path = settings.Path
             };
 
-            var names = settings.VariableNames?.Cast<string>().ToArray() ?? Array.Empty<string>();
-            var values = settings.VariableValues?.Cast<string>().ToArray() ?? Array.Empty<string>();
-            foreach (var (name, value) in names.Zip(values))
-            {
-                viewModel.Variables.Add(new Variable
-                {
-                    Key = name,
-                    Value = value,
-                });
-            }
+            return viewModel;
+        }
 
-            if (!viewModel.Variables.Any())
+        private static string GetSettingsPath(string path) => Path.Combine(path, "template.settings.json");
+
+        private static void SaveRepositorySettings(string repositoryPath, MainViewModel viewModel)
+        {
+            var settings = new Settings
             {
-                viewModel.Variables.Add(new()
-                {
-                    Key = "$PROJECT_NAME$",
-                    Value = "Name",
-                });
-                viewModel.Variables.Add(new()
-                {
-                    Key = "$PROJECT_DESCRIPTION$",
-                    Value = "Description",
-                });
+                Variables = viewModel.Variables.ToList(),
+                Conditions = viewModel.Conditions.ToList(),
+            };
+            var json = JsonSerializer.Serialize(settings, new JsonSerializerOptions
+            {
+                WriteIndented = true,
+            });
+            var path = GetSettingsPath(repositoryPath);
+
+            File.WriteAllText(path, json);
+        }
+
+        private static MainViewModel LoadRepositorySettings(string repositoryPath)
+        {
+            var path = GetSettingsPath(repositoryPath);
+            var json = File.Exists(path)
+                ? File.ReadAllText(path)
+                : "{}";
+            var settings = JsonSerializer.Deserialize<Settings>(json) ?? new Settings();
+
+            var viewModel = new MainViewModel
+            {
+                Path = repositoryPath,
+                Variables = new ObservableCollection<Variable>(settings.Variables),
+                Conditions = new ObservableCollection<Condition>(settings.Conditions)
+            };
+
+            if (!viewModel.Variables.Any() && !viewModel.Conditions.Any())
+            {
+                viewModel.Variables.Add(new("$PROJECT_NAME$", "Name"));
+                viewModel.Variables.Add(new("$PROJECT_DESCRIPTION$", "Description"));
+
+                viewModel.Conditions.Add(new("?CONDITION?", true));
             }
 
             return viewModel;
+        }
+
+        private void Open(string path)
+        {
+            ViewModel = LoadRepositorySettings(path);
+            DataContext = ViewModel;
+
+            Save(ViewModel);
         }
 
         #endregion
 
         #region Event Handlers
 
-        private void Button_Click(object sender, RoutedEventArgs e)
+        private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             try
             {
-                Save(ViewModel);
+                ViewModel = Load();
+                DataContext = ViewModel;
 
+                if (Directory.Exists(ViewModel.Path))
+                {
+                    Open(ViewModel.Path);
+                }
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void OpenButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                using var dialog = new FolderBrowserDialog
+                {
+                    AutoUpgradeEnabled = true,
+                };
+                if (dialog.ShowDialog() != System.Windows.Forms.DialogResult.OK)
+                {
+                    return;
+                }
+
+                var path = dialog.SelectedPath;
+
+                Open(path);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void ReplaceButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
                 var path = ViewModel.Path;
                 var variables = ViewModel.Variables
                     .ToDictionary(
@@ -103,7 +165,24 @@ namespace RepositoryInitializer.App.WPF
                 Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
                 Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
+                Save(ViewModel);
+
                 MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
+            }
+            catch (Exception exception)
+            {
+                MessageBox.Show($"{exception}", "Exception:", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+        }
+
+        private void SaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                SaveRepositorySettings(ViewModel.Path, ViewModel);
+                Save(ViewModel);
+
+                MessageBox.Show("Saved!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
             }
             catch (Exception exception)
             {

@@ -25,28 +25,6 @@ namespace RepositoryInitializer.App.WPF.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection VariableNames {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["VariableNames"]));
-            }
-            set {
-                this["VariableNames"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        public global::System.Collections.Specialized.StringCollection VariableValues {
-            get {
-                return ((global::System.Collections.Specialized.StringCollection)(this["VariableValues"]));
-            }
-            set {
-                this["VariableValues"] = value;
-            }
-        }
-        
-        [global::System.Configuration.UserScopedSettingAttribute()]
-        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.DefaultSettingValueAttribute("")]
         public string Path {
             get {
@@ -54,6 +32,18 @@ namespace RepositoryInitializer.App.WPF.Properties {
             }
             set {
                 this["Path"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool UpgradeRequired {
+            get {
+                return ((bool)(this["UpgradeRequired"]));
+            }
+            set {
+                this["UpgradeRequired"] = value;
             }
         }
     }

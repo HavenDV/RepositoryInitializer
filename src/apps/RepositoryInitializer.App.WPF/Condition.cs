@@ -1,15 +1,15 @@
 ﻿namespace RepositoryInitializer.App.WPF
 {
-    public class Variable
+    public class Condition
     {
         public string? Key { get; set; }
-        public string? Value { get; set; }
+        public bool Value { get; set; }
 
-        public Variable()
+        public Condition()
         {
         }
 
-        public Variable(string key, string value)
+        public Condition(string key, bool value)
         {
             Key = key;
             Value = value;
