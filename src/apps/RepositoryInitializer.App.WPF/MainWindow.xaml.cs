@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -91,8 +91,9 @@ namespace RepositoryInitializer.App.WPF
 
             if (!viewModel.Variables.Any() && !viewModel.Conditions.Any())
             {
-                viewModel.Variables.Add(new("$PROJECT_NAME$", "Name"));
-                viewModel.Variables.Add(new("$PROJECT_DESCRIPTION$", "Description"));
+                var name = Path.GetFileName(repositoryPath.TrimEnd('\\', '/'));
+                viewModel.Variables.Add(new("$PROJECT_NAME$", name));
+                viewModel.Variables.Add(new("$PROJECT_DESCRIPTION$", name));
 
                 viewModel.Conditions.Add(new("?CONDITION?", true));
             }
