@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -129,6 +130,43 @@ namespace RepositoryInitializer.UnitTests
             };
 
             CollectionAssert.AreEqual(expected, paths.Filter(folder).ToArray());
+        }
+
+        [TestMethod]
+        public void PrepareReplaceFileNamesTest()
+        {
+            const string folder = @"C:\Users\haven\source\repos\HavenDV\CSharpProjectTemplate";
+            var paths = new[]
+            {
+                @$"{folder}\$PROJECT_NAME$.sln",
+                @$"{folder}\LICENSE",
+                @$"{folder}\README.md",
+                @$"{folder}\template.settings.json",
+                @$"{folder}\docs\nuget_icon.png",
+                @$"{folder}\src\Directory.Build.props",
+                @$"{folder}\src\key.snk",
+                @$"{folder}\src\libs\Directory.Build.props",
+                @$"{folder}\src\tests\Directory.Build.props",
+                @$"{folder}\src\libs\$PROJECT_NAME$\$PROJECT_NAME$.csproj",
+                @$"{folder}\src\tests\$PROJECT_NAME$.IntegrationTests\$PROJECT_NAME$.IntegrationTests.csproj",
+                @$"{folder}\src\tests\$PROJECT_NAME$.IntegrationTests\Tests.cs",
+                @$"{folder}\src\tests\$PROJECT_NAME$.UnitTests\$PROJECT_NAME$.UnitTests.csproj",
+                @$"{folder}\src\tests\$PROJECT_NAME$.UnitTests\Tests.cs",
+            };
+            var expected = new[]
+            {
+                (@$"{folder}\$PROJECT_NAME$.sln", @$"{folder}\Test.sln"),
+                (@$"{folder}\src\libs\$PROJECT_NAME$\$PROJECT_NAME$.csproj", @$"{folder}\src\libs\Test\Test.csproj"),
+                (@$"{folder}\src\tests\$PROJECT_NAME$.IntegrationTests\$PROJECT_NAME$.IntegrationTests.csproj", @$"{folder}\src\tests\Test.IntegrationTests\Test.IntegrationTests.csproj"),
+                (@$"{folder}\src\tests\$PROJECT_NAME$.IntegrationTests\Tests.cs", @$"{folder}\src\tests\Test.IntegrationTests\Tests.cs"),
+                (@$"{folder}\src\tests\$PROJECT_NAME$.UnitTests\$PROJECT_NAME$.UnitTests.csproj", @$"{folder}\src\tests\Test.UnitTests\Test.UnitTests.csproj"),
+                (@$"{folder}\src\tests\$PROJECT_NAME$.UnitTests\Tests.cs", @$"{folder}\src\tests\Test.UnitTests\Tests.cs"),
+            };
+
+            CollectionAssert.AreEqual(expected, paths.PrepareReplaceFileNames(new Dictionary<string, string>
+            {
+                { "$PROJECT_NAME$", "Test" },
+            }).ToArray());
         }
     }
 }

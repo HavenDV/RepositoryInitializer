@@ -51,13 +51,18 @@ namespace RepositoryInitializer
             return !Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories).Any();
         }
 
+        public static IEnumerable<(string, string)> PrepareReplaceFileNames(this IEnumerable<string> paths, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
+        {
+            return paths
+                .Where(path => path.ContainsVariables(variables))
+                .Select(path => (path, path.ReplaceWithVariables(variables, comparison)));
+        }
+
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            foreach (var path in GetPaths(folder)
-                .Where(path => path.ContainsVariables(variables)))
+            foreach (var (path, to) in GetPaths(folder)
+                .PrepareReplaceFileNames(variables, comparison))
             {
-                var to = path.ReplaceWithVariables(variables, comparison);
-
                 var directory = Path.GetDirectoryName(to) ?? string.Empty;
                 Directory.CreateDirectory(directory);
 
