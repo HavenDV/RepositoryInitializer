@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace RepositoryInitializer.App.WPF
+namespace RepositoryInitializer
 {
     public class Settings
     {

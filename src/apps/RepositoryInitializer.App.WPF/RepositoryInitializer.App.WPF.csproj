@@ -3,11 +3,13 @@
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
     <TargetFrameworks>net5.0-windows</TargetFrameworks>
-    <LangVersion>preview</LangVersion>
-    <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
   </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\libs\RepositoryInitializer\RepositoryInitializer.csproj" />
+  </ItemGroup>
 
   <ItemGroup Label="Settings">
     <Compile Update="Properties\Settings.Designer.cs">

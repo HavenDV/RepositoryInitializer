@@ -1,4 +1,4 @@
-﻿namespace RepositoryInitializer.App.WPF
+﻿namespace RepositoryInitializer
 {
     public class Condition
     {

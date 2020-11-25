@@ -5,9 +5,10 @@ using System.Linq;
 using System.Text.Json;
 using System.Windows;
 using System.Windows.Forms;
+using RepositoryInitializer.App.WPF.ViewModels;
 using MessageBox = System.Windows.MessageBox;
 
-namespace RepositoryInitializer.App.WPF
+namespace RepositoryInitializer.App.WPF.Views
 {
     public partial class MainWindow
     {
@@ -166,7 +167,7 @@ namespace RepositoryInitializer.App.WPF
 
                 Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
                 Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
-                Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
+                //Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
                 Save(ViewModel);
 

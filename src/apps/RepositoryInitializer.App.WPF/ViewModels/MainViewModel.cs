@@ -1,6 +1,6 @@
 ﻿using System.Collections.ObjectModel;
 
-namespace RepositoryInitializer.App.WPF
+namespace RepositoryInitializer.App.WPF.ViewModels
 {
     public class MainViewModel
     {

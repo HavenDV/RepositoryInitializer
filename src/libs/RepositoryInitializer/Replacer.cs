@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace RepositoryInitializer.App.WPF
+namespace RepositoryInitializer
 {
     public static class Replacer
     {
@@ -33,11 +33,22 @@ namespace RepositoryInitializer.App.WPF
             return IgnoredSubfolders.Any(subFolder => path.StartsWith(folder.TrimEnd('\\', '/') + "\\" + subFolder));
         }
 
+        public static IEnumerable<string> Filter(this IEnumerable<string> enumerable, string folder)
+        {
+            return enumerable
+                .Where(path => !IsIgnored(path, folder));
+        }
+
         internal static IEnumerable<string> GetPaths(string folder)
         {
             return Directory
                 .EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
-                .Where(path => !IsIgnored(path, folder));
+                .Filter(folder);
+        }
+
+        public static bool IsEmptyDirectory(this string folder)
+        {
+            return !Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories).Any();
         }
 
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
@@ -47,10 +58,17 @@ namespace RepositoryInitializer.App.WPF
             {
                 var to = path.ReplaceWithVariables(variables, comparison);
 
-                var directory = Path.GetDirectoryName(to);
-                Directory.CreateDirectory(directory ?? string.Empty);
+                var directory = Path.GetDirectoryName(to) ?? string.Empty;
+                Directory.CreateDirectory(directory);
 
                 File.Move(path, to);
+
+                while (!string.IsNullOrWhiteSpace(directory) && directory.IsEmptyDirectory())
+                {
+                    Directory.Delete(directory);
+
+                    directory = Path.GetDirectoryName(directory) ?? string.Empty;
+                } 
             }
         }
 
