@@ -28,9 +28,10 @@
             <TextBox Grid.Column="1" Text="{Binding Path}" Margin="5" />
         </Grid>
         <StackPanel Grid.Row="3" Orientation="Horizontal">
-            <Button Content="Open" Click="OpenButton_Click" Width="100" />
-            <Button Content="Save" Click="SaveButton_Click" Width="100" />
-            <Button Content="Replace" Click="ReplaceButton_Click" Width="100" />
+            <Button Content="Open" Click="OpenButton_Click" Padding="10,0" />
+            <Button Content="Save" Click="SaveButton_Click" Padding="10,0" />
+            <Button Content="Replace" Click="ReplaceButton_Click" Padding="10,0" />
+            <CheckBox Content="Delete template.settings.json after replace" IsChecked="{Binding DeleteTemplateSettings}" VerticalAlignment="Center" Margin="10,0" />
         </StackPanel>
     </Grid>
 </Window>

@@ -32,6 +32,7 @@ namespace RepositoryInitializer.App.WPF
         {
             var settings = Properties.Settings.Default;
             settings.Path = viewModel.Path;
+            settings.DeleteTemplateSettings = viewModel.DeleteTemplateSettings;
 
             settings.Save();
         }
@@ -48,7 +49,8 @@ namespace RepositoryInitializer.App.WPF
 
             var viewModel = new MainViewModel
             {
-                Path = settings.Path
+                Path = settings.Path,
+                DeleteTemplateSettings = settings.DeleteTemplateSettings,
             };
 
             return viewModel;
@@ -166,6 +168,13 @@ namespace RepositoryInitializer.App.WPF
                 Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
                 Save(ViewModel);
+
+                if (ViewModel.DeleteTemplateSettings)
+                {
+                    var settingsPath = GetSettingsPath(path);
+
+                    File.Delete(settingsPath);
+                }
 
                 MessageBox.Show("Done!", "Message:", MessageBoxButton.OK, MessageBoxImage.Information);
             }

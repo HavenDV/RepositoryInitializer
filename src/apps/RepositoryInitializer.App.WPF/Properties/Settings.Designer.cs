@@ -46,5 +46,17 @@ namespace RepositoryInitializer.App.WPF.Properties {
                 this["UpgradeRequired"] = value;
             }
         }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("True")]
+        public bool DeleteTemplateSettings {
+            get {
+                return ((bool)(this["DeleteTemplateSettings"]));
+            }
+            set {
+                this["DeleteTemplateSettings"] = value;
+            }
+        }
     }
 }
