@@ -177,7 +177,7 @@ namespace RepositoryInitializer.App.WPF.Views
 
                 Replacer.ReplaceFileNames(path, variables, StringComparison.Ordinal);
                 Replacer.ReplaceContents(path, variables, StringComparison.Ordinal);
-                //Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
+                Replacer.DeleteEmptyDirs(path, variables, StringComparison.Ordinal);
 
                 Save(ViewModel);
 

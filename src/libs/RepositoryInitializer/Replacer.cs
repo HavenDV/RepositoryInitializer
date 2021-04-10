@@ -42,7 +42,14 @@ namespace RepositoryInitializer
         internal static IEnumerable<string> GetPaths(string folder)
         {
             return Directory
-                .EnumerateFiles(folder, "*.*", SearchOption.AllDirectories)
+                .EnumerateFiles(folder, "*", SearchOption.AllDirectories)
+                .Filter(folder);
+        }
+
+        internal static IEnumerable<string> GetDirectories(string folder)
+        {
+            return Directory
+                .EnumerateDirectories(folder, "*", SearchOption.AllDirectories)
                 .Filter(folder);
         }
 
@@ -51,7 +58,10 @@ namespace RepositoryInitializer
             return !Directory.EnumerateFiles(folder, "*.*", SearchOption.AllDirectories).Any();
         }
 
-        public static IEnumerable<(string, string)> PrepareReplaceFileNames(this IEnumerable<string> paths, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
+        public static IEnumerable<(string, string)> PrepareReplaceFileNames(
+            this IEnumerable<string> paths, 
+            IDictionary<string, string> variables, 
+            StringComparison comparison = StringComparison.InvariantCulture)
         {
             return paths
                 .Where(path => path.ContainsVariables(variables))
@@ -60,13 +70,13 @@ namespace RepositoryInitializer
 
         public static void ReplaceFileNames(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            foreach (var (path, to) in GetPaths(folder)
+            foreach (var (from, to) in GetPaths(folder)
                 .PrepareReplaceFileNames(variables, comparison))
             {
                 var directory = Path.GetDirectoryName(to) ?? string.Empty;
                 Directory.CreateDirectory(directory);
 
-                File.Move(path, to);
+                File.Move(from, to);
 
                 while (!string.IsNullOrWhiteSpace(directory) && directory.IsEmptyDirectory())
                 {
@@ -93,9 +103,10 @@ namespace RepositoryInitializer
 
         public static void DeleteEmptyDirs(string folder, IDictionary<string, string> variables, StringComparison comparison = StringComparison.InvariantCulture)
         {
-            foreach (var path in Directory
-                .EnumerateDirectories(folder, "*", SearchOption.AllDirectories)
-                .Where(path => !IsIgnored(path, folder) && path.ContainsVariables(variables, comparison)))
+            foreach (var path in GetDirectories(folder)
+                .Where(path => 
+                    path.ContainsVariables(variables, comparison) &&
+                    !Directory.EnumerateFiles(path, "*", SearchOption.AllDirectories).Any()))
             {
                 Directory.Delete(path, true);
             }
